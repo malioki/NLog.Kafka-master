@@ -45,6 +45,8 @@ namespace NLog.Kafka
         {
             IPHostEntry ipHost = Dns.GetHostEntryAsync(Dns.GetHostName()).Result;
             IPAddress ipAddr = ipHost.AddressList[0];
+            //IFormatter formatter = new BinaryFormatter();
+            //LogClass log = (LogClass)formatter.Deserialize(logEvent.FormattedMessage); ;
 
             Dictionary<string, object> formatLogEvent = new Dictionary<string, object>() {
                 { "version"     , logEvent.SequenceID },
@@ -140,9 +142,6 @@ namespace NLog.Kafka
             {
                 Console.WriteLine($"Delivered '{task.Result.Value}' to: {task.Result.TopicPartitionOffset} message: {task.Result.Error.Reason}");
             });
-
-
-           
 
         }
 
