@@ -11,7 +11,7 @@ namespace NLog.Kafka
         public string Action { get; set; }
         public int DeliveryTag { get; set; }
         public string Exchange { get; set; } 
-        public int CorrelationId { get; set; }
+        public string CorrelationId { get; set; }
         public string Message { get; set; }
         public string Error { get; set; }
     }

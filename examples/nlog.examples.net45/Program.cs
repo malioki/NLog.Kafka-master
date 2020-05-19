@@ -3,6 +3,7 @@ using NLog.Config;
 using NLog.Kafka;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -22,13 +23,14 @@ namespace ConsoleApp2
             Logger logger = LogManager.GetCurrentClassLogger();
 
             MappedDiagnosticsContext.Set("item1", "haha");
-            string path = @"C:\Downloads\Elastic_Stack\text.log";
+            string path = @"C:\Downloads\Elastic_Stack\text.txt";
             long countString = 0;
             using (StreamReader sr = new StreamReader(path, System.Text.Encoding.Default))
             {
                 string line;
                 while ((line = sr.ReadLine()) != null)
                 {
+                    line = line.Substring(line.IndexOf('{'));
                     logger.Info(line);
                     countString++;
                 }

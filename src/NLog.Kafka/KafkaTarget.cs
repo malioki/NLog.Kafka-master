@@ -47,19 +47,35 @@ namespace NLog.Kafka
             IPAddress ipAddr = ipHost.AddressList[0];
             //IFormatter formatter = new BinaryFormatter();
             //LogClass log = (LogClass)formatter.Deserialize(logEvent.FormattedMessage); ;
-
+            LogClass log = JsonConvert.DeserializeObject<LogClass>(logEvent.Message);
+            Dictionary<string, object> htmlAttributes = new Dictionary<string, object>();
+            if (!log.Message.Contains("Handled Mng"))
+            {
+               htmlAttributes = JsonConvert.DeserializeObject<Dictionary<string, object>>(log.Message);
+            }
             Dictionary<string, object> formatLogEvent = new Dictionary<string, object>() {
-                { "version"     , logEvent.SequenceID },
-                { "@timestamp"  , DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture) },
-                { "appname"     , this.appname },
-                { "HOSTNAME"    , ipAddr.ToString() },
-                { "thread_name" , System.Threading.Thread.CurrentThread.Name },
-                { "level"       , logEvent.Level.Name },
-                { "logger_name" , logEvent.LoggerName },
-                { "message"     , logEvent.FormattedMessage },
+                { "version"        , logEvent.SequenceID },
+                { "@timestamp"     , DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture) },
+                { "appname"        , this.appname },
+                { "HOSTNAME"       , ipAddr.ToString() },
+                { "thread_name"    , System.Threading.Thread.CurrentThread.Name },
+                { "level"          , logEvent.Level.Name },
+                { "logger_name"    , logEvent.LoggerName },
+                { "action"         , log.Action},
+                { "delivery_tag"   , log.DeliveryTag },
+                { "exchange"       , log.Exchange},
+                { "correlation_id" , log.CorrelationId },
+                { "top_messages"        , log.Message },
+                { "top_error"          , log.Error },
+                //{ "message"     , logEvent.FormattedMessage },
             };
-
-         
+            if (htmlAttributes != null)
+            {
+                foreach (KeyValuePair<string, object> entry in htmlAttributes)
+                {
+                    formatLogEvent.Add(entry.Key, entry.Value);
+                }
+            }
 
             if (logEvent.Exception != null)
             {
