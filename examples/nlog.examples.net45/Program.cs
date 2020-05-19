@@ -2,27 +2,15 @@
 using NLog.Config;
 using NLog.Kafka;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ConsoleApp2
 {
     class Program
     {
-
-
         static void Main(string[] args)
         {
-            //ConfigurationItemFactory.Default.Targets.RegisterDefinition("kafka", typeof(KafkaTarget));
-
-            //LogManager.ReconfigExistingLoggers();
             Logger logger = LogManager.GetCurrentClassLogger();
-
-            MappedDiagnosticsContext.Set("item1", "haha");
             string path = @"C:\Downloads\Elastic_Stack\text.txt";
             long countString = 0;
             using (StreamReader sr = new StreamReader(path, System.Text.Encoding.Default))
@@ -36,12 +24,6 @@ namespace ConsoleApp2
                 }
             }
             Console.WriteLine("Sended " + countString + " messages to Kafka");
-            //for (int i = 0; i < 10; i++)
-            //{
-            //    logger.Info("My test information");
-            //    logger.Error(new NotImplementedException("error"),"error");
-            //    Console.WriteLine("sended");
-            //}
             Console.ReadKey();
         }
     }

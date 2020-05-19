@@ -64,10 +64,10 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="librdkafka.redist">
-      <Version>0.11.5</Version>
+      <Version>1.4.2</Version>
     </PackageReference>
     <PackageReference Include="NLog">
-      <Version>4.5.8</Version>
+      <Version>4.7.2</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

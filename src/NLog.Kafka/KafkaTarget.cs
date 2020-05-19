@@ -1,5 +1,6 @@
 ﻿using Confluent.Kafka;
-using Confluent.Kafka.Serialization;
+using Confluent.Kafka.SyncOverAsync;
+using Confluent.Kafka.Admin;
 using Newtonsoft.Json;
 using NLog.Common;
 using NLog.Config;
@@ -18,13 +19,12 @@ namespace NLog.Kafka
     public class KafkaTarget : TargetWithLayout
     {
 
-        private Producer<string, string> _producer = null;
+        private IProducer<Null, LogClass> _producer = null;
 
         public KafkaTarget()
         {
             this.ProducerConfigs = new List<ProducerConfig>(10);
         }
-
 
         [RequiredParameter]
         [ArrayParameter(typeof(ProducerConfig), "producerConfig")]
@@ -40,19 +40,24 @@ namespace NLog.Kafka
         public bool includeMdc { get; set; }
 
 
-
-        protected override void Write(LogEventInfo logEvent)
+        protected override async void Write(LogEventInfo logEvent)
         {
             IPHostEntry ipHost = Dns.GetHostEntryAsync(Dns.GetHostName()).Result;
+
             IPAddress ipAddr = ipHost.AddressList[0];
+
             //IFormatter formatter = new BinaryFormatter();
             //LogClass log = (LogClass)formatter.Deserialize(logEvent.FormattedMessage); ;
+
             LogClass log = JsonConvert.DeserializeObject<LogClass>(logEvent.Message);
+
             Dictionary<string, object> htmlAttributes = new Dictionary<string, object>();
+
             if (!log.Message.Contains("Handled Mng"))
             {
-               htmlAttributes = JsonConvert.DeserializeObject<Dictionary<string, object>>(log.Message);
+                htmlAttributes = JsonConvert.DeserializeObject<Dictionary<string, object>>(log.Message);
             }
+
             Dictionary<string, object> formatLogEvent = new Dictionary<string, object>() {
                 { "version"        , logEvent.SequenceID },
                 { "@timestamp"     , DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture) },
@@ -65,9 +70,8 @@ namespace NLog.Kafka
                 { "delivery_tag"   , log.DeliveryTag },
                 { "exchange"       , log.Exchange},
                 { "correlation_id" , log.CorrelationId },
-                { "top_messages"        , log.Message },
-                { "top_error"          , log.Error },
-                //{ "message"     , logEvent.FormattedMessage },
+                { "top_messages"   , log.Message },
+                { "top_error"      , log.Error },
             };
             if (htmlAttributes != null)
             {
@@ -88,14 +92,15 @@ namespace NLog.Kafka
             {
                 TransferContextDataToLogEventProperties(formatLogEvent);
             }
-
-            string message = JsonConvert.SerializeObject(formatLogEvent);
-
-            SendMessageToQueue(message);
+            //foreach (KeyValuePair<string, object> entry in formatLogEvent)
+            //{ 
+                Message<Null, LogClass> message = new Message<Null, LogClass> { Value = log};
+                //LogClass object = JsonConvert.SerializeObject(formatLogEvent);
+                await SendMessageToQueueAsync(message);
+               //}
 
             base.Write(logEvent);
         }
-
 
         private static void TransferContextDataToLogEventProperties(Dictionary<string, object> logDic)
         {
@@ -111,53 +116,45 @@ namespace NLog.Kafka
             }
         }
 
-        #region 创建 kafka 与 发现队列函数
-        private Producer<string, string> GetProducer()
+        #region kafka 
+        private IProducer<Null, LogClass> GetProducer()
         {
             if (this.ProducerConfigs == null || this.ProducerConfigs.Count == 0) throw new Exception("ProducerConfigs is not found");
 
             if (_producer == null)
             {
-                var config = new Dictionary<string, object>
-                {
-                    //{ "bootstrap.servers", "127.0.0.1:9092,127.0.0.1:9092,127.0.0.1:9092" },
-                    //{ "queue.buffering.max.messages", 2000000 },
-                    //{ "message.send.max.retries", 3 },
-                    //{ "retry.backoff.ms", 500 }
-                };
-
+               // IEnumerable<KeyValuePair<string, string>> config = new IEnumerable<KeyValuePair<string, string>>;
+                var config = new Confluent.Kafka.ProducerConfig {};
                 foreach (var pconfig in this.ProducerConfigs)
                 {
-                    config.Add(pconfig.Key, pconfig.value);
-                }
-
-
-
-                _producer = new Producer<string,string>(config, new StringSerializer(Encoding.UTF8), new StringSerializer(Encoding.UTF8));
-
-                _producer.OnError += _producer_OnError;
-                _producer.OnLog += _producer_OnLog;
-                _producer.OnStatistics += _producer_OnStatistics;
+                    config.Set(pconfig.Key, pconfig.value);
+                }               
+                _producer = new ProducerBuilder<Null, LogClass>(config).Build();
             }
+
             return _producer;
         }
 
-        private void SendMessageToQueue(string message)
+        private async Task SendMessageToQueueAsync(Message<Null, LogClass> message)
         {
 
-            if (string.IsNullOrEmpty(message))
-                return;
+            /*if (message.Key==null)
+                return;*/
             var producer = this.GetProducer();
 
             var key = "Multiple." + DateTime.Now.Ticks;
 
-            //.ProduceAsync(topic, key, msg, null);
-            var dr = producer.ProduceAsync(topic, key, message);
-
-            dr.ContinueWith(task =>
-            {
-                Console.WriteLine($"Delivered '{task.Result.Value}' to: {task.Result.TopicPartitionOffset} message: {task.Result.Error.Reason}");
-            });
+            //var dr =
+                await producer.ProduceAsync(topic, message).ContinueWith(task => task.IsFaulted
+                            ? $"error producing message: {task.Exception.Message}"
+                            : $"produced to: {task.Result.TopicPartitionOffset}");
+           //if (dr.Result != null)
+           //{
+           //    dr.ContinueWith(task =>
+           //    {
+           //        Console.WriteLine($"Delivered '{task.Result.Value}' to: {task.Result.Topic} message: {task.Result.Message.Value}");
+           //    });
+           // }
 
         }
 
@@ -173,7 +170,7 @@ namespace NLog.Kafka
 
         private void _producer_OnError(object sender, Error e)
         {
-            Console.WriteLine($"nlog.kafka error: [ Code:{e.Code} HasError:{e.HasError} IsBrokerError:{e.IsBrokerError} IsLocalError:{e.IsLocalError} Reason:{e.Reason} ]");
+            Console.WriteLine($"nlog.kafka error: [ Code:{e.Code} HasError:{e.IsError} IsBrokerError:{e.IsBrokerError} IsLocalError:{e.IsLocalError} Reason:{e.Reason} ]");
         }
 
         private void CloseProducer()
