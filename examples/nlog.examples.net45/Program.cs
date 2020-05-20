@@ -12,7 +12,6 @@ namespace ConsoleApp2
         {
             Logger logger = LogManager.GetCurrentClassLogger();
             string path = @"C:\Downloads\Elastic_Stack\text.txt";
-            long countString = 0;
             using (StreamReader sr = new StreamReader(path, System.Text.Encoding.Default))
             {
                 string line;
@@ -20,10 +19,8 @@ namespace ConsoleApp2
                 {
                     line = line.Substring(line.IndexOf('{'));
                     logger.Info(line);
-                    countString++;
                 }
             }
-            Console.WriteLine("Sended " + countString + " messages to Kafka");
             Console.ReadKey();
         }
     }
