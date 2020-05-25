@@ -17,7 +17,7 @@ using Newtonsoft.Json.Linq;
 
 namespace NLog.Kafka
 {
-    [Target("Kafka")]
+    [Target("Kafka1")]
     public class KafkaTarget : TargetWithLayout
     {
 
@@ -43,6 +43,7 @@ namespace NLog.Kafka
         {
             var config = new Confluent.Kafka.ProducerConfig{};
             LogClass log = JsonConvert.DeserializeObject<LogClass>(logEvent.Message);
+            topic = logEvent.Level + "-kafka";
             if (!log.Message.Contains("Handled Mng"))
             {
                 foreach (var pconfig in this.ProducerConfigs)
@@ -53,13 +54,11 @@ namespace NLog.Kafka
                 {
                     int numProduced = 0;
                     int numMessages = 1;
-                    for (int i = 0; i < numMessages; ++i)
+                    for ( int i = 0; i < numMessages; ++i )
                     {
                         var key = "kafka";
                         var val = JObject.FromObject(log).ToString(Formatting.None);
-
                         Console.WriteLine($"Producing record: {key} {val}");
-
                         producer.Produce(topic, new Message<string, string> { Key = key, Value = val },
                             (deliveryReport) =>
                             {
@@ -74,13 +73,10 @@ namespace NLog.Kafka
                                 }
                             });
                     }
-
                     producer.Flush(TimeSpan.FromSeconds(10));
-
                     Console.WriteLine($"{numProduced} messages were produced to topic {topic}");
                 }
             }
         }
-
     }
 }
