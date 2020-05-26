@@ -1,6 +1,8 @@
 ﻿using Newtonsoft.Json;
 using NLog;
+using NLog.Targets;
 using NLog.Config;
+using NLog.Web;
 using NLog.Kafka;
 using System;
 using System.IO;
@@ -13,7 +15,8 @@ namespace ConsoleApp2
         {
             /*Logger logger = LogManager.GetCurrentClassLogger();
             Logger nlog = LogManager.GetLogger("Kafka");*/
-            Logger logger = LogManager.GetCurrentClassLogger();
+            Logger logger = LogManager.GetLogger("Messaging");
+            Logger loggerFile = LogManager.GetLogger("AutoTest");
             string path = @"C:\Downloads\Elastic_Stack\text.txt";
             using (StreamReader sr = new StreamReader(path, System.Text.Encoding.Default))
             {
@@ -34,7 +37,7 @@ namespace ConsoleApp2
                         if (level == LogLevel.Trace)
                             logger.Trace(logInfo);
                         else
-                            logger.Error(logInfo);
+                            loggerFile.Error(logInfo);
                     }
                 }
             }

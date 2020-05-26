@@ -17,7 +17,7 @@ using Newtonsoft.Json.Linq;
 
 namespace NLog.Kafka
 {
-    [Target("Kafka1")]
+    [Target("Kafka")]
     public class KafkaTarget : TargetWithLayout
     {
 

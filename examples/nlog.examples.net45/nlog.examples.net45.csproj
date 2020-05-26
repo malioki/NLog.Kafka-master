@@ -8,9 +8,10 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>nlog.examples.net45</RootNamespace>
     <AssemblyName>nlog.examples.net45</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -68,6 +69,15 @@
     </PackageReference>
     <PackageReference Include="NLog">
       <Version>4.7.2</Version>
+    </PackageReference>
+    <PackageReference Include="NLog.Extended">
+      <Version>4.7.2</Version>
+    </PackageReference>
+    <PackageReference Include="NLog.Web">
+      <Version>4.9.2</Version>
+    </PackageReference>
+    <PackageReference Include="NLog.Web.AspNetCore">
+      <Version>4.7.1</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

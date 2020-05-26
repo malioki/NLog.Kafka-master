@@ -21,4 +21,40 @@
     <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
     <PackageReference Include="System.Threading" Version="4.3.0" />
   </ItemGroup>
+
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net46'">
+    <PackageReference Include="NLog.Extended">
+      <Version>4.7.2</Version>
+    </PackageReference>
+    <PackageReference Include="NLog.Extensions.Logging">
+      <Version>1.6.4</Version>
+    </PackageReference>
+    <PackageReference Include="NLog.Web">
+      <Version>4.9.2</Version>
+    </PackageReference>
+    <PackageReference Include="NLog.Web.AspNetCore">
+      <Version>4.7.1</Version>
+    </PackageReference>
+  </ItemGroup>
+
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net45'">
+    <PackageReference Include="NLog.Extended">
+      <Version>4.7.2</Version>
+    </PackageReference>
+    <PackageReference Include="NLog.Web">
+      <Version>4.9.2</Version>
+    </PackageReference>
+  </ItemGroup>
+
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.6'">
+    <PackageReference Include="NLog.Extensions.Logging">
+      <Version>1.6.4</Version>
+    </PackageReference>
+    <PackageReference Include="NLog.Web.AspNetCore">
+      <Version>4.7.1</Version>
+    </PackageReference>
+  </ItemGroup>
 </Project>
